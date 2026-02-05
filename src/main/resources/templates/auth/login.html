@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Biblioteca</title>
+  <link rel="stylesheet" th:href="@{/css/login.css}">
+</head>
+<body>
+
+<div class="login-container">
+
+  <div class="login-left">
+    <div class="logo">
+      📚 <span>Biblioteca</span>
+    </div>
+
+    <h2>Inicio de sesión</h2>
+    <p class="login-desc">
+      Ingrese sus credenciales para acceder al sistema de gestión bibliotecaria
+    </p>
+
+    <form id="loginForm">
+      <div class="input-group">
+        <label>Usuario</label>
+        <div class="input-icon">
+          <span>👤</span>
+          <input type="text" id="username" placeholder="Usuario" required>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Contraseña</label>
+        <div class="input-icon">
+          <span>🔒</span>
+          <input type="password" id="password" placeholder="Contraseña" required>
+        </div>
+      </div>
+
+      <div id="loginError" style="color:red; margin-bottom:10px;"></div>
+
+      <button type="submit" class="btn-login">Ingresar</button>
+    </form>
+  </div>
+
+  <!-- DERECHA -->
+  <div class="login-right">
+    <div class="overlay-text">
+      <h1>Gestiona tu biblioteca fácilmente</h1>
+      <p>
+        Control de libros, préstamos y estadísticas en un solo lugar.
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const errorDiv = document.getElementById("loginError");
+
+    errorDiv.textContent = "";
+
+    try {
+        const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error("Credenciales inválidas");
+        }
+
+        const result = await response.json();
+
+        // Validamos que exista el token
+        if (!result.data || !result.data.token) {
+            throw new Error("No se recibió token válido del servidor");
+        }
+
+        // Guardamos el JWT correctamente
+        localStorage.setItem("token", result.data.token);
+        console.log("Token guardado:", result.data.token);
+
+        // Redirigimos al dashboard
+        window.location.href = "/";
+
+    } catch (err) {
+        console.error("Error en login:", err);
+        errorDiv.textContent = err.message;
+    }
+});
+
+</script>
+
+</body>
+</html>

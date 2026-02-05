@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="/js/auth.js"></script>
+    <style>
+        body {
+            min-height: 100vh;
+        }
+        
+        #sidebar {
+            min-height: calc(100vh - 56px);
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar-link {
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            border-left-color: #3498db;
+            color: #fff;
+        }
+        
+        .sidebar-link.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left-color: #3498db;
+            color: #fff;
+        }
+        
+        .sidebar-link i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card {
+            border-left: 4px solid;
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .content-wrapper {
+            background-color: #f8f9fa;
+            min-height: calc(100vh - 56px);
+            padding: 20px;
+        }
+    </style>
+</head>
+<body onload="requireAuth()">
+
+    <!-- Navbar superior -->
+    <nav class="navbar navbar-dark bg-dark px-3">
+        <div class="d-flex align-items-center">
+            <button class="btn btn-dark d-md-none me-2" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar">
+                <i class="bi bi-list"></i>
+            </button>
+            <span class="navbar-brand mb-0">📚 Library Manager</span>
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="text-light me-3">
+                <i class="bi bi-person-circle"></i> 
+                <span class="d-none d-sm-inline">Usuario</span>
+            </span>
+            <button onclick="logout()" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-box-arrow-right"></i> Salir
+            </button>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 px-0 collapse collapse-horizontal show d-md-block" id="sidebar">
+                <div class="d-flex flex-column pt-3">
+                    <a href="/" class="sidebar-link" th:classappend="${#strings.contains(#httpServletRequest.requestURI, 'dashboard')} ? 'active' : ''">
+                        <i class="bi bi-house-door"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    
+                    <a href="/books" class="sidebar-link" th:classappend="${#strings.contains(#httpServletRequest.requestURI, 'books')} ? 'active' : ''">
+                        <i class="bi bi-book"></i>
+                        <span>Libros</span>
+                    </a>
+                    
+                    <a href="/loans" class="sidebar-link" th:classappend="${#strings.contains(#httpServletRequest.requestURI, 'loans')} ? 'active' : ''">
+                        <i class="bi bi-arrow-left-right"></i>
+                        <span>Préstamos</span>
+                    </a>
+                    
+                </div>
+            </div>
+
+            <!-- Contenido principal -->
+            <div class="col-md-9 col-lg-10 content-wrapper">
+                <div th:replace="~{::content}"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

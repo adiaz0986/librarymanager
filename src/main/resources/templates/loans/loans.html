@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Préstamos - Library Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: #f5f6fa; }
+        .navbar { background-color: #242525; }
+        .navbar-brand, .logout { color: #fff !important; }
+        .card { border-radius: 12px; }
+        .sidebar { background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%); min-height: calc(100vh - 56px); }
+        .sidebar a { color: #ecf0f1; text-decoration: none; padding: 12px 20px; display: block; }
+        .sidebar a:hover, .sidebar a.active { background-color: rgba(52, 152, 219, 0.3); }
+        .badge { font-size: 0.85rem; }
+        .table-hover tbody tr:hover { background-color: #f1f3f5; }
+        .table-danger { background-color: #f8d7da !important; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg px-4">
+    <span class="navbar-brand">📚 Library Manager</span>
+    <div class="ms-auto">
+        <button class="btn btn-sm btn-danger logout" onclick="logout()">Salir</button>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 px-0 sidebar">
+            <div class="pt-3">
+                <a href="/"><i class="bi bi-house-door me-2"></i>Dashboard</a>
+                <a href="/books"><i class="bi bi-book me-2"></i>Libros</a>
+                <a href="/loans" class="active"><i class="bi bi-arrow-left-right me-2"></i>Préstamos</a>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="col-md-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="bi bi-arrow-left-right"></i> Gestión de Préstamos</h3>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#loanModal">
+                    <i class="bi bi-plus-circle"></i> Nuevo Préstamo
+                </button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" id="searchInput" 
+                                       placeholder="Buscar por nombre o email del solicitante..."
+                                       onkeyup="filterLoans()">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-select" id="statusFilter" onchange="filterLoans()">
+                                <option value="all">Todos los préstamos</option>
+                                <option value="active">Préstamos activos</option>
+                                <option value="returned">Devueltos</option>
+                                <option value="overdue">Vencidos</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de préstamos -->
+            <div class="card">
+                <div class="card-body">
+                    <div id="loadingSpinner" class="text-center py-5">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                    </div>
+                    
+                    <div id="loansTableContainer" style="display: none;">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Libro</th>
+                                        <th>Solicitante</th>
+                                        <th>Email</th>
+                                        <th>Fecha Préstamo</th>
+                                        <th>Fecha Vencimiento</th>
+                                        <th>Fecha Devolución</th>
+                                        <th>Estado</th>
+                                        <th class="text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="loansTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="emptyState" style="display: none;" class="text-center py-5">
+                        <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+                        <p class="text-muted mt-3">No hay préstamos registrados</p>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#loanModal">
+                            <i class="bi bi-plus-circle"></i> Crear primer préstamo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para nuevo préstamo -->
+<div class="modal fade" id="loanModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuevo Préstamo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="loanForm">
+                    <div class="mb-3">
+                        <label for="bookId" class="form-label">Libro *</label>
+                        <select class="form-select" id="bookId" required>
+                            <option value="">Seleccione un libro...</option>
+                        </select>
+                        <small class="text-muted">Solo se muestran libros disponibles</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="borrowerName" class="form-label">Nombre del Solicitante *</label>
+                        <input type="text" class="form-control" id="borrowerName" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="borrowerEmail" class="form-label">Email del Solicitante *</label>
+                        <input type="email" class="form-control" id="borrowerEmail" required>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        El préstamo será por 14 días desde hoy
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="createLoan()">
+                    <i class="bi bi-check-circle"></i> Crear Préstamo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast para notificaciones -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+    <div id="toast" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMessage"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let allLoans = [];
+let availableBooks = [];
+
+// ===== FUNCIONES DE AUTENTICACIÓN =====
+function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+}
+
+const token = localStorage.getItem("token");
+if (!token || token.trim() === "") {
+    console.warn("No se encontró token válido. Redirigiendo al login...");
+    logout();
+}
+
+// ===== CARGAR DATOS AL INICIAR =====
+document.addEventListener('DOMContentLoaded', function() {
+    loadLoans();
+    loadAvailableBooks();
+});
+
+// ===== CARGAR PRÉSTAMOS DESDE LA API =====
+async function loadLoans() {
+    try {
+        const response = await fetch('/api/loans', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                console.warn("Token inválido o expirado. Haciendo logout...");
+                logout();
+                return;
+            }
+            throw new Error('Error al cargar préstamos');
+        }
+
+        const responseData = await response.json();
+        allLoans = responseData.data || responseData;
+        renderLoans(allLoans);
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('Error al cargar los préstamos', 'danger');
+    }
+}
+
+// ===== CARGAR LIBROS DISPONIBLES =====
+async function loadAvailableBooks() {
+    try {
+        const response = await fetch('/api/books', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (response.ok) {
+            const responseData = await response.json();
+            const books = responseData.data || responseData;
+            availableBooks = books.filter(book => book.status === 'AVAILABLE');
+            populateBookSelect();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// ===== POBLAR SELECT DE LIBROS =====
+function populateBookSelect() {
+    const select = document.getElementById('bookId');
+    select.innerHTML = '<option value="">Seleccione un libro...</option>';
+    
+    if (availableBooks.length === 0) {
+        select.innerHTML = '<option value="">No hay libros disponibles</option>';
+        return;
+    }
+    
+    availableBooks.forEach(book => {
+        const option = document.createElement('option');
+        option.value = book.id;
+        option.textContent = `${book.title} - ${book.author}`;
+        select.appendChild(option);
+    });
+}
+
+// ===== RENDERIZAR PRÉSTAMOS EN LA TABLA =====
+function renderLoans(loans) {
+    const tbody = document.getElementById('loansTableBody');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const tableContainer = document.getElementById('loansTableContainer');
+    const emptyState = document.getElementById('emptyState');
+
+    loadingSpinner.style.display = 'none';
+
+    if (loans.length === 0) {
+        tableContainer.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+    }
+
+    emptyState.style.display = 'none';
+    tableContainer.style.display = 'block';
+
+    tbody.innerHTML = loans.map(loan => {
+        const isOverdue = isLoanOverdue(loan);
+        const isActive = !loan.returnDate;
+        const rowClass = isOverdue ? 'table-danger' : '';
+        
+        return `
+            <tr class="${rowClass}">
+                <td><strong>${loan.book.title}</strong><br><small class="text-muted">${loan.book.author}</small></td>
+                <td>${loan.borrowerName}</td>
+                <td><small>${loan.borrowerEmail}</small></td>
+                <td>${formatDate(loan.loanDate)}</td>
+                <td>${formatDate(loan.dueDate)}</td>
+                <td>${loan.returnDate ? formatDate(loan.returnDate) : '<span class="text-muted">-</span>'}</td>
+                <td>${getLoanStatusBadge(loan)}</td>
+                <td class="text-center">
+                    ${isActive ? `
+                        <button class="btn btn-sm btn-success" 
+                                onclick="returnBook(${loan.id})"
+                                title="Devolver libro">
+                            <i class="bi bi-check-circle"></i> Devolver
+                        </button>
+                    ` : '<span class="text-muted">-</span>'}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// ===== OBTENER BADGE DE ESTADO DEL PRÉSTAMO =====
+function getLoanStatusBadge(loan) {
+    if (loan.returnDate) {
+        return '<span class="badge bg-secondary">Devuelto</span>';
+    }
+    
+    if (isLoanOverdue(loan)) {
+        const daysOverdue = Math.floor((new Date() - new Date(loan.dueDate)) / (1000 * 60 * 60 * 24));
+        return `<span class="badge bg-danger">Vencido (${daysOverdue} días)</span>`;
+    }
+    
+    const daysRemaining = Math.ceil((new Date(loan.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+    return `<span class="badge bg-success">Activo (${daysRemaining} días)</span>`;
+}
+
+// ===== VERIFICAR SI EL PRÉSTAMO ESTÁ VENCIDO =====
+function isLoanOverdue(loan) {
+    if (loan.returnDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(loan.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    return dueDate < today;
+}
+
+// ===== FORMATEAR FECHA =====
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+}
+
+// ===== FILTRAR PRÉSTAMOS =====
+function filterLoans() {
+    const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+
+    let filtered = allLoans;
+
+    // Filtrar por búsqueda
+    if (searchQuery) {
+        filtered = filtered.filter(loan =>
+            loan.borrowerName.toLowerCase().includes(searchQuery) ||
+            loan.borrowerEmail.toLowerCase().includes(searchQuery) ||
+            loan.book.title.toLowerCase().includes(searchQuery)
+        );
+    }
+
+    // Filtrar por estado
+    if (statusFilter !== 'all') {
+        filtered = filtered.filter(loan => {
+            switch(statusFilter) {
+                case 'active':
+                    return !loan.returnDate;
+                case 'returned':
+                    return loan.returnDate !== null;
+                case 'overdue':
+                    return isLoanOverdue(loan);
+                default:
+                    return true;
+            }
+        });
+    }
+
+    renderLoans(filtered);
+}
+
+// ===== CREAR NUEVO PRÉSTAMO =====
+async function createLoan() {
+    const form = document.getElementById('loanForm');
+    
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    const bookId = document.getElementById('bookId').value;
+    if (!bookId) {
+        showAlert('Debe seleccionar un libro', 'warning');
+        return;
+    }
+
+    const loanRequest = {
+        bookId: parseInt(bookId),
+        borrowerName: document.getElementById('borrowerName').value,
+        borrowerEmail: document.getElementById('borrowerEmail').value
+    };
+
+    try {
+        const response = await fetch('/api/loans', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(loanRequest)
+        });
+
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('loanModal')).hide();
+            form.reset();
+            showAlert('Préstamo creado exitosamente', 'success');
+            loadLoans();
+            loadAvailableBooks(); // Actualizar lista de libros disponibles
+        } else {
+            const errorData = await response.json();
+            const errorMessage = errorData.message || errorData.error || 'Error al crear el préstamo';
+            showAlert(errorMessage, 'danger');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('Error al crear el préstamo', 'danger');
+    }
+}
+
+// ===== DEVOLVER LIBRO =====
+async function returnBook(loanId) {
+    if (!confirm('¿Confirmar la devolución de este libro?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/loans/${loanId}/return`, {
+            method: 'PUT',
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (response.ok) {
+            showAlert('Libro devuelto exitosamente', 'success');
+            loadLoans();
+            loadAvailableBooks(); // Actualizar lista de libros disponibles
+        } else {
+            const errorData = await response.json();
+            const errorMessage = errorData.message || errorData.error || 'Error al devolver el libro';
+            showAlert(errorMessage, 'danger');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('Error al devolver el libro', 'danger');
+    }
+}
+
+// ===== MOSTRAR ALERTAS =====
+function showAlert(message, type) {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    toast.className = `toast align-items-center border-0 text-white bg-${type}`;
+    toastMessage.textContent = message;
+    
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+}
+</script>
+
+</body>
+</html>

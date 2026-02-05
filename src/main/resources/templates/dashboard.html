@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Library Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        body { background-color: rgba(0,0,0,0.1); }
+        .navbar { background-color: #242525; }
+        .navbar-brand, .logout { color: #fff !important; }
+        .card { border-radius: 12px; }
+        .sidebar { 
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%); 
+            min-height: calc(100vh - 56px); 
+        }
+        .sidebar a { 
+            color: #ecf0f1; 
+            text-decoration: none; 
+            padding: 12px 20px; 
+            display: block; 
+        }
+        .sidebar a:hover, .sidebar a.active { 
+            background-color: rgba(52, 152, 219, 0.3); 
+        }
+        .stat-card {
+            border-left: 4px solid;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .table-hover tbody tr:hover { background-color: #f1f3f5; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg px-4">
+    <span class="navbar-brand">📚 Library Manager</span>
+    <div class="ms-auto">
+        <button class="btn btn-sm btn-danger logout" onclick="logout()">Salir</button>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 px-0 sidebar">
+            <div class="pt-3">
+                <a href="/" class="active"><i class="bi bi-house-door me-2"></i>Dashboard</a>
+                <a href="/books"><i class="bi bi-book me-2"></i>Libros</a>
+                <a href="/loans"><i class="bi bi-arrow-left-right me-2"></i>Préstamos</a>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="col-md-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="bi bi-speedometer2"></i> Dashboard</h3>
+            </div>
+
+            <!-- Tarjetas de estadísticas -->
+            <div class="row g-4 mb-4" id="statsCards">
+                <div class="col-12 text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones rápidas -->
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-book-half text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="card-title mt-3">Gestionar Libros</h5>
+                            <p class="card-text">Agregar, editar o buscar libros en la biblioteca</p>
+                            <a href="/books" class="btn btn-primary">
+                                <i class="bi bi-arrow-right"></i> Ir a Libros
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-arrow-left-right text-success" style="font-size: 3rem;"></i>
+                            <h5 class="card-title mt-3">Gestionar Préstamos</h5>
+                            <p class="card-text">Prestar libros y gestionar devoluciones</p>
+                            <a href="/loans" class="btn btn-success">
+                                <i class="bi bi-arrow-right"></i> Ir a Préstamos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function logout() {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem("token");
+        if (!token || token.trim() === "") {
+            console.warn("No se encontró token válido. Redirigiendo al login...");
+            logout();
+            return;
+        }
+        loadStatistics();
+    });
+
+    async function loadStatistics() {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/books/stats', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    console.warn("Token inválido o expirado. Haciendo logout...");
+                    logout();
+                    return;
+                }
+                throw new Error('Error al cargar estadísticas');
+            }
+
+            const responseData = await response.json();
+            const stats = responseData.data || responseData;
+            renderStatistics(stats);
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('statsCards').innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> Error al cargar las estadísticas
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    function renderStatistics(stats) {
+        document.getElementById('statsCards').innerHTML = `
+            <div class="col-md-3">
+                <div class="card stat-card border-primary" style="border-left-color: #0d6efd !important;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Total Libros</h6>
+                                <h2 class="mb-0">${stats.totalBooks || 0}</h2>
+                            </div>
+                            <i class="bi bi-book text-primary" style="font-size: 2.5rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card border-success" style="border-left-color: #198754 !important;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Disponibles</h6>
+                                <h2 class="mb-0">${stats.availableBooks || 0}</h2>
+                            </div>
+                            <i class="bi bi-check-circle text-success" style="font-size: 2.5rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card border-warning" style="border-left-color: #ffc107 !important;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Prestados</h6>
+                                <h2 class="mb-0">${stats.borrowedBooks || 0}</h2>
+                            </div>
+                            <i class="bi bi-arrow-repeat text-warning" style="font-size: 2.5rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card border-danger" style="border-left-color: #dc3545 !important;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Vencidos</h6>
+                                <h2 class="mb-0">${stats.overdueLoans || 0}</h2>
+                            </div>
+                            <i class="bi bi-exclamation-triangle text-danger" style="font-size: 2.5rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+</script>
+</body>
+</html>
