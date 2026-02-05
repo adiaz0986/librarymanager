@@ -34,8 +34,8 @@ Sistema de gestión de biblioteca desarrollado con Spring Boot que permite admin
 
 ### 1. Clonar el repositorio
 ```bash
-git clone <repository-url>
-cd library-manager
+git clone https://github.com/adiaz0986/librarymanager.git
+cd librarymanager
 ```
 
 ### 2. Configuración de Base de Datos
@@ -99,15 +99,18 @@ Content-Type: application/json
 
 {
   "username": "admin",
-  "password": "admin123"
+  "password": "admin"
 }
 ```
 
 **Respuesta:**
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "username": "admin"
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3MDIzMjMyNSwiZXhwIjoxNzcwMjM1OTI1fQ.yhRZwvxKU6hgENLMJKHbI5iFougNqkIATeKWIM30zPw"
+  },
+  "message": null
 }
 ```
 
@@ -123,7 +126,6 @@ Authorization: Bearer <token>
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
 | POST | `/api/auth/login` | Iniciar sesión |
-| POST | `/api/auth/register` | Registrar usuario |
 
 ### 📖 Libros
 
@@ -204,7 +206,6 @@ Ejecutar los tests:
 El proyecto incluye:
 - ✅ Tests unitarios de servicios
 - ✅ Tests de integración de controladores
-- ✅ Cobertura de casos críticos
 
 ## 🐳 Docker
 
@@ -249,5 +250,5 @@ JWT_EXPIRATION=86400000
 
 ## 👥 Autor
 
-**Tu Nombre** - [GitHub](https://github.com/tu-usuario)
+**Andres Diaz** - [GitHub](https://github.com/adiaz0986)
 

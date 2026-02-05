@@ -61,7 +61,7 @@ class BookControllerTest {
     @Test
     @DisplayName("POST /api/books retorna 201 Created")
     void createBook_validBook_returnsCreated() throws Exception {
-        // Arrange
+      
         when(bookService.create(any(Book.class))).thenReturn(validBook);
 
         String bookJson = """
@@ -87,7 +87,7 @@ class BookControllerTest {
     @Test
     @DisplayName("GET /api/books retorna lista de libros")
     void getAllBooks_returnsBookList() throws Exception {
-        // Arrange
+        
         Book book2 = new Book();
         book2.setId(2L);
         book2.setTitle("Second Book");

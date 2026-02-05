@@ -5,7 +5,7 @@ import io.jsonwebtoken.Jwts;
 
 public class TokenJwtConfig {
 
-    // ⚠️ En producción esto DEBE venir de application.yml
+    
     public static final SecretKey SECRET_KEY =
             Jwts.SIG.HS256.key().build();
 

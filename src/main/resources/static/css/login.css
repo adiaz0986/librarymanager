@@ -1,124 +1,244 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
-  font-family: sans-serif;
-  background-color: #f4f4f4;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
 }
 
 .login-container {
-  display: flex;
-  min-height: 100vh;
+    display: flex;
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
-/* LADO IZQUIERDO */
 .login-left {
-  flex: 0 0 40%;
-  background: #fff;
-  padding: 50px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+    flex: 1;
+    padding: 40px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .logo {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #001A24;
-  margin-bottom: 20px;
-  text-align: center; 
-  margin-bottom: 50px;
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #3498db;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.logo span {
-  margin-left: 5px;
-}
-
-h2 {
-  color: #001A24;
-  margin-bottom: 5px;
+.login-left h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 8px;
 }
 
 .login-desc {
-  color: #555;
-  margin-bottom: 30px;
+    color: #718096;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
 }
 
-.input-group {
-  margin-bottom: 20px;
+.input-group-custom {
+    margin-bottom: 16px;
 }
 
-.input-group label {
-  font-size: 0.9rem;
-  color: #001A24;
-  display: block;
-  margin-bottom: 5px;
+.input-group-custom label {
+    display: block;
+    margin-bottom: 6px;
+    color: #4a5568;
+    font-weight: 500;
+    font-size: 0.85rem;
 }
 
-.input-icon {
-  display: flex;
-  align-items: center;
-  background: #eef2f3;
-  border-radius: 6px;
-  padding: 8px 12px;
+.input-wrapper {
+    position: relative;
 }
 
-.input-icon span {
-  margin-right: 8px;
-  font-size: 1.1rem;
+.input-wrapper i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0aec0;
+    font-size: 1rem;
 }
 
-.input-icon input,
-.input-icon select {
-  border: none;
-  outline: none;
-  background: transparent;
-  width: 100%;
-  font-size: 0.95rem;
+.input-wrapper input {
+    width: 100%;
+    padding: 10px 12px 10px 38px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.input-wrapper input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 .btn-login {
-  width: 100%;
-  background: #ffcc00;
-  border: none;
-  padding: 12px;
-  font-size: 1rem;
-  border-radius: 6px;
-  color: #001A24;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.3s ease;
+    width: 100%;
+    padding: 11px;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-top: 8px;
 }
 
 .btn-login:hover {
-  background: #e6b800;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(44, 62, 80, 0.4);
+    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
 }
 
-/* LADO DERECHO */
+.btn-login:active {
+    transform: translateY(0);
+}
+
 .login-right {
-  flex: 1.2;
-  background: url('/images/background.png') center/cover no-repeat;
-  position: relative;
+    flex: 1;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: white;
+    position: relative;
+}
+
+.login-right::before {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: rgba(52, 152, 219, 0.15);
+    border-radius: 50%;
+    top: -80px;
+    right: -80px;
 }
 
 .overlay-text {
-  position: absolute;
-  bottom: 40px;
-  left: 40px;
-  color: white;
-  max-width: 400px;
+    position: relative;
+    z-index: 1;
 }
 
 .overlay-text h1 {
-  font-size: 1.8rem;
-  margin-bottom: 10px;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 16px;
+    line-height: 1.2;
 }
 
 .overlay-text p {
-  font-size: 1rem;
-  line-height: 1.4;
+    font-size: 1rem;
+    opacity: 0.95;
+    line-height: 1.5;
 }
 
+.overlay-text .feature-list {
+    margin-top: 24px;
+}
+
+.overlay-text .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+}
+
+.overlay-text .feature-item i {
+    font-size: 1.2rem;
+    color: #3498db;
+}
+
+.text-center.mt-4 {
+    margin-top: 16px !important;
+}
+
+.text-center.mt-4 small {
+    font-size: 0.8rem;
+}
+
+.alert {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+    }
+
+    .login-container {
+        flex-direction: column;
+        max-width: 100%;
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+
+    .login-right {
+        padding: 30px 25px;
+        min-height: auto;
+    }
+
+    .login-left {
+        padding: 30px 25px;
+    }
+
+    .overlay-text h1 {
+        font-size: 1.6rem;
+    }
+
+    .overlay-text .feature-list {
+        margin-top: 16px;
+    }
+}
+
+@media (max-height: 700px) {
+    .login-left {
+        padding: 25px 40px;
+    }
+
+    .logo {
+        margin-bottom: 15px;
+        font-size: 1.4rem;
+    }
+
+    .login-left h2 {
+        font-size: 1.3rem;
+    }
+
+    .login-desc {
+        margin-bottom: 18px;
+    }
+
+    .overlay-text h1 {
+        font-size: 1.7rem;
+    }
+
+    .overlay-text .feature-list {
+        margin-top: 16px;
+    }
+}

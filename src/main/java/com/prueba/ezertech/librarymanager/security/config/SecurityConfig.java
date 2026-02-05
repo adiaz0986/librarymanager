@@ -32,9 +32,7 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
-    /* =====================================================
-       🔐 API SECURITY (JWT) → /api/**
-       ===================================================== */
+    
     @Bean
     @Order(1)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -59,9 +57,7 @@ public class SecurityConfig {
                 .build();
     }
 
-    /* =====================================================
-       🌐 WEB SECURITY (Thymeleaf)
-       ===================================================== */
+    
     @Bean
     @Order(2)
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -82,9 +78,7 @@ public class SecurityConfig {
                 .build();
     }
 
-    /* =====================================================
-       AUTH PROVIDER
-       ===================================================== */
+   
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
